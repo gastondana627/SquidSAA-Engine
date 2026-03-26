@@ -28,7 +28,7 @@ export const CommunityHub: React.FC = () => {
                     Validate datasets, peer-review notebooks, and participate in live audit events.
                 </p>
                 
-                <a href="#lab" className="group relative inline-flex items-center justify-center px-8 py-4 bg-kaggle text-space-950 font-bold rounded overflow-hidden transition-all hover:bg-white hover:shadow-[0_0_30px_rgba(32,190,255,0.5)]">
+                <a href="#lab" className="group relative inline-flex items-center justify-center px-8 py-4 bg-kaggle text-space-950 font-bold rounded overflow-hidden transition-all hover:bg-white hover:shadow-[0_0_30px_rgba(32,190,255,0.5)]" aria-label="Start Audit Sequence">
                     <span className="relative z-10 flex items-center gap-2">
                         START AUDIT SEQUENCE <ArrowRight size={18} />
                     </span>

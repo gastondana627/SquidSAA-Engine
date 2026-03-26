@@ -16,7 +16,7 @@ export const Lab: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <a href="#" className="group block">
+            <a href="#" className="group block" aria-label="Access EDA Notebook">
                 <GlassCard className="h-full flex flex-col justify-between border-kaggle/20" hoverEffect={true}>
                     <div>
                         <div className="flex justify-between items-start mb-6">
@@ -37,7 +37,7 @@ export const Lab: React.FC = () => {
                 </GlassCard>
             </a>
 
-            <a href="#" className="group block">
+            <a href="#" className="group block" aria-label="Access Model Training">
                 <GlassCard className="h-full flex flex-col justify-between border-purple-500/20" hoverEffect={true}>
                     <div>
                         <div className="flex justify-between items-start mb-6">
@@ -58,7 +58,7 @@ export const Lab: React.FC = () => {
                 </GlassCard>
             </a>
             
-            <a href="#" className="group block md:col-span-2">
+            <a href="#" className="group block md:col-span-2" aria-label="Access GitHub Repository">
                  <GlassCard className="flex flex-col md:flex-row items-center justify-between border-white/10" hoverEffect={true}>
                     <div className="flex items-center space-x-6 mb-4 md:mb-0">
                         <div className="p-4 bg-white/5 rounded-full text-white">
