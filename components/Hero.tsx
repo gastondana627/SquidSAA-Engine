@@ -19,6 +19,16 @@ export const Hero: React.FC = () => {
 
     const particles: Particle[] = [];
     const particleCount = width < 768 ? 60 : 150;
+    let animationFrameId: number;
+    let isVisible = true;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
 
     class Particle {
       x: number;
@@ -78,29 +88,32 @@ export const Hero: React.FC = () => {
 
     const animate = () => {
       if (!ctx) return;
-      ctx.clearRect(0, 0, width, height);
       
-      // Draw connecting lines for "constellation" look near the center
-      particles.forEach((p, index) => {
-        p.update();
-        p.draw();
+      if (isVisible) {
+        ctx.clearRect(0, 0, width, height);
         
-        // Simple connectivity
-        for (let j = index + 1; j < particles.length; j++) {
-            const p2 = particles[j];
-            const distance = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
-            if (distance < 100) {
-                ctx.beginPath();
-                ctx.strokeStyle = '#20BEFF'; // Kaggle Blue
-                ctx.globalAlpha = 0.1 - (distance / 100) * 0.1;
-                ctx.lineWidth = 0.5;
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-            }
-        }
-      });
-      requestAnimationFrame(animate);
+        // Draw connecting lines for "constellation" look near the center
+        particles.forEach((p, index) => {
+          p.update();
+          p.draw();
+
+          // Simple connectivity
+          for (let j = index + 1; j < particles.length; j++) {
+              const p2 = particles[j];
+              const distance = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
+              if (distance < 100) {
+                  ctx.beginPath();
+                  ctx.strokeStyle = '#20BEFF'; // Kaggle Blue
+                  ctx.globalAlpha = 0.1 - (distance / 100) * 0.1;
+                  ctx.lineWidth = 0.5;
+                  ctx.moveTo(p.x, p.y);
+                  ctx.lineTo(p2.x, p2.y);
+                  ctx.stroke();
+              }
+          }
+        });
+      }
+      animationFrameId = requestAnimationFrame(animate);
     };
 
     init();
@@ -114,7 +127,11 @@ export const Hero: React.FC = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (

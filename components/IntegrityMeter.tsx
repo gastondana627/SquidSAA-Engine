@@ -18,6 +18,15 @@ export const IntegrityMeter: React.FC<IntegrityMeterProps> = ({ initialDrift = 0
 
     let animationFrameId: number;
     let time = 0;
+    let isVisible = true;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
 
     const resize = () => {
       if (canvas.parentElement) {
@@ -29,66 +38,68 @@ export const IntegrityMeter: React.FC<IntegrityMeterProps> = ({ initialDrift = 0
     resize();
 
     const render = () => {
-      const width = canvas.width;
-      const height = canvas.height;
+      if (isVisible) {
+        const width = canvas.width;
+        const height = canvas.height;
 
-      ctx.clearRect(0, 0, width, height);
+        ctx.clearRect(0, 0, width, height);
 
-      // Draw Grid
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0; x < width; x += 40) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-      }
-      for (let y = 0; y < height; y += 40) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.stroke();
-
-      // Draw Signal
-      ctx.beginPath();
-      ctx.strokeStyle = drift > 0.5 ? (Math.random() > 0.5 ? '#ff4444' : '#20BEFF') : '#20BEFF'; // Red flicker if critical
-      ctx.lineWidth = 2;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = drift > 0.5 ? '#ff4444' : '#20BEFF';
-
-      for (let x = 0; x < width; x++) {
-        // Base carrier wave
-        const frequency = 0.02;
-        const amplitude = 50;
-        let y = height / 2 + Math.sin(x * frequency - time) * amplitude;
-
-        // Apply Drift Interference
-        if (drift > 0.0) {
-           // Base noise present in all signals
-           y += (Math.random() - 0.5) * (drift * 10);
-           
-           // Severe Jitter Threshold
-           if (drift > 0.5) {
-             const jitter = (Math.random() - 0.5) * (drift * 150);
-             // Occasional spikes
-             if (Math.random() > 0.95) {
-                y += jitter;
-             }
-           }
+        // Draw Grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = 0; x < width; x += 40) {
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
         }
-        
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        for (let y = 0; y < height; y += 40) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+        }
+        ctx.stroke();
+
+        // Draw Signal
+        ctx.beginPath();
+        ctx.strokeStyle = drift > 0.5 ? (Math.random() > 0.5 ? '#ff4444' : '#20BEFF') : '#20BEFF'; // Red flicker if critical
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = drift > 0.5 ? '#ff4444' : '#20BEFF';
+
+        for (let x = 0; x < width; x++) {
+          // Base carrier wave
+          const frequency = 0.02;
+          const amplitude = 50;
+          let y = height / 2 + Math.sin(x * frequency - time) * amplitude;
+
+          // Apply Drift Interference
+          if (drift > 0.0) {
+             // Base noise present in all signals
+             y += (Math.random() - 0.5) * (drift * 10);
+
+             // Severe Jitter Threshold
+             if (drift > 0.5) {
+               const jitter = (Math.random() - 0.5) * (drift * 150);
+               // Occasional spikes
+               if (Math.random() > 0.95) {
+                  y += jitter;
+               }
+             }
+          }
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Draw Overlay Text
+        ctx.fillStyle = drift > 0.5 ? '#ff4444' : '#20BEFF';
+        ctx.font = '12px "JetBrains Mono"';
+        ctx.fillText(`SIGNAL_INTEGRITY: ${Math.max(0, (1 - drift) * 100).toFixed(2)}%`, 20, 30);
+        ctx.fillText(`DRIFT_FACTOR: ${drift.toFixed(3)}`, 20, 50);
+
+        time += 0.1;
       }
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      // Draw Overlay Text
-      ctx.fillStyle = drift > 0.5 ? '#ff4444' : '#20BEFF';
-      ctx.font = '12px "JetBrains Mono"';
-      ctx.fillText(`SIGNAL_INTEGRITY: ${Math.max(0, (1 - drift) * 100).toFixed(2)}%`, 20, 30);
-      ctx.fillText(`DRIFT_FACTOR: ${drift.toFixed(3)}`, 20, 50);
-
-      time += 0.1;
       animationFrameId = requestAnimationFrame(render);
     };
 
@@ -96,6 +107,7 @@ export const IntegrityMeter: React.FC<IntegrityMeterProps> = ({ initialDrift = 0
 
     return () => {
       window.removeEventListener('resize', resize);
+      observer.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
   }, [drift]);
